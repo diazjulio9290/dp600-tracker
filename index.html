@@ -476,6 +476,9 @@ const PHASES = [
 const NEON = {
   enabled: true,
   dataApiUrl: "https://ep-tiny-frog-aq80vpdt.apirest.c-8.us-east-1.aws.neon.tech/neondb/rest/v1",
+  // Neon's Data API requires a JWT even for anonymous access. This public endpoint
+  // mints a short-lived anonymous token (no secret needed); we send it as a Bearer header.
+  authUrl: "https://ep-tiny-frog-aq80vpdt.neonauth.c-8.us-east-1.aws.neon.tech/neondb/auth",
   userId: "julio"
 };
 
@@ -490,9 +493,24 @@ function setSync(txt, cls){
   if(el){ el.textContent = txt; el.className = "syncpill " + (cls||""); }
 }
 
+// Cache the anonymous JWT and refresh it ~60s before it expires.
+let _neonTok = null, _neonTokExp = 0;
+async function neonToken(){
+  const now = Date.now()/1000;
+  if(_neonTok && now < _neonTokExp - 60) return _neonTok;
+  const res = await fetch(`${NEON.authUrl.replace(/\/$/,'')}/token/anonymous`, { headers:{ "Accept":"application/json" } });
+  if(!res.ok) throw new Error("token "+res.status);
+  const j = await res.json();
+  _neonTok = j.token; _neonTokExp = j.expires_at || (now + 3000);
+  return _neonTok;
+}
+async function neonHeaders(extra){
+  return Object.assign({ "Authorization":"Bearer "+(await neonToken()) }, extra||{});
+}
+
 async function neonGet(){
   const url = `${NEON.dataApiUrl.replace(/\/$/,'')}/progress?id=eq.${encodeURIComponent(NEON.userId)}&select=data`;
-  const res = await fetch(url, { headers:{ "Accept":"application/json" } });
+  const res = await fetch(url, { headers: await neonHeaders({ "Accept":"application/json" }) });
   if(!res.ok) throw new Error("GET "+res.status);
   const rows = await res.json();
   return rows.length ? rows[0].data : null;
@@ -501,7 +519,7 @@ async function neonPut(){
   const url = `${NEON.dataApiUrl.replace(/\/$/,'')}/progress?id=eq.${encodeURIComponent(NEON.userId)}`;
   const res = await fetch(url, {
     method:"PATCH",
-    headers:{ "Content-Type":"application/json", "Prefer":"return=minimal" },
+    headers: await neonHeaders({ "Content-Type":"application/json", "Prefer":"return=minimal" }),
     body: JSON.stringify({ data: STATE, updated_at: new Date().toISOString() })
   });
   if(!res.ok) throw new Error("PATCH "+res.status);
