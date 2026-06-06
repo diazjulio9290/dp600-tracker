@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DP-600 · 30-Day Expedition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0c1116;
+    --ink-2:#121a22;
+    --panel:#161f29;
+    --panel-2:#1b2631;
+    --line:#26323f;
+    --line-2:#33424f;
+    --paper:#ece3d2;
+    --paper-dim:#a9b3bd;
+    --muted:#74828f;
+    --amber:#f0a93b;
+    --amber-deep:#d6892a;
+    --teal:#46c2b0;
+    --teal-deep:#2f8f81;
+    --rose:#e07a6b;
+    --shadow:0 24px 60px -28px rgba(0,0,0,.75);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 700px at 78% -8%, rgba(240,169,59,.10), transparent 55%),
+      radial-gradient(900px 600px at 5% 12%, rgba(70,194,176,.08), transparent 55%),
+      var(--ink);
+    color:var(--paper);
+    font-family:"IBM Plex Sans",sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px 120px}
+  a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(70,194,176,.3)}
+  a:hover{color:var(--amber);border-color:rgba(240,169,59,.5)}
+  .mono{font-family:"IBM Plex Mono",monospace}
+
+  /* ---------- HERO ---------- */
+  header{padding:64px 0 30px;position:relative}
+  .kicker{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--amber);margin-bottom:18px;
+    display:flex;align-items:center;gap:12px;
+  }
+  .kicker::before{content:"";width:34px;height:1px;background:var(--amber);display:inline-block}
+  h1{
+    font-family:"Fraunces",serif;font-weight:600;font-size:clamp(40px,7vw,78px);
+    line-height:.98;margin:0 0 8px;letter-spacing:-.02em;
+  }
+  h1 em{font-style:italic;color:var(--amber);font-weight:500}
+  .sub{font-size:clamp(15px,2vw,18px);color:var(--paper-dim);max-width:620px;margin:14px 0 0}
+
+  /* ---------- DASHBOARD ---------- */
+  .dash{
+    display:grid;grid-template-columns:auto 1fr;gap:30px;align-items:center;
+    margin:40px 0 14px;padding:26px 30px;border:1px solid var(--line);border-radius:18px;
+    background:linear-gradient(145deg,var(--panel),var(--ink-2));box-shadow:var(--shadow);
+  }
+  .ring-wrap{position:relative;width:138px;height:138px}
+  .ring-wrap svg{transform:rotate(-90deg)}
+  .ring-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring-num b{font-family:"Fraunces",serif;font-size:38px;line-height:1;font-weight:600}
+  .ring-num span{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:4px}
+  .dash-right{display:flex;flex-direction:column;gap:18px}
+  .stat-row{display:flex;gap:26px;flex-wrap:wrap}
+  .stat b{font-family:"Fraunces",serif;font-size:26px;display:block;line-height:1}
+  .stat span{font-size:12px;color:var(--muted);font-family:"IBM Plex Mono",monospace;letter-spacing:.05em}
+  .examdate{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--paper-dim)}
+  .examdate input{
+    background:var(--ink);border:1px solid var(--line-2);color:var(--paper);
+    border-radius:8px;padding:7px 10px;font-family:"IBM Plex Mono",monospace;font-size:13px;
+  }
+  .countdown{color:var(--amber);font-family:"IBM Plex Mono",monospace;font-weight:600}
+
+  /* ---------- BLUEPRINT ---------- */
+  .blueprint{margin:8px 0 50px;padding:26px 30px;border:1px solid var(--line);border-radius:18px;background:var(--ink-2)}
+  .blueprint h3{margin:0 0 4px;font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--paper-dim);font-weight:500}
+  .blueprint .note{font-size:12.5px;color:var(--muted);margin:0 0 20px}
+  .bar{margin:14px 0}
+  .bar-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .bar-top .name{font-weight:600;font-size:14.5px}
+  .bar-top .wt{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--amber)}
+  .bar-track{height:12px;background:var(--ink);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+  .bar-fill{height:100%;border-radius:8px}
+  .f1{width:48%;background:linear-gradient(90deg,var(--amber-deep),var(--amber))}
+  .f2{width:28%;background:linear-gradient(90deg,var(--teal-deep),var(--teal))}
+  .f3{width:28%;background:linear-gradient(90deg,#8a6fb0,#b495d8)}
+
+  /* ---------- SECTIONS / PHASES ---------- */
+  .phase{margin:42px 0}
+  .phase-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:6px}
+  .phase-tag{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+    border:1px solid var(--line-2);border-radius:8px;padding:6px 11px;white-space:nowrap;
+    color:var(--ink);background:var(--amber);margin-top:4px;
+  }
+  .phase-tag.t{background:var(--teal)}
+  .phase-tag.p{background:#b495d8}
+  .phase-tag.g{background:var(--paper)}
+  .phase-title{font-family:"Fraunces",serif;font-size:clamp(24px,4vw,34px);font-weight:600;line-height:1.05;margin:0}
+  .phase-desc{color:var(--paper-dim);font-size:14.5px;margin:6px 0 20px}
+
+  /* ---------- DAY CARDS ---------- */
+  .day{
+    border:1px solid var(--line);border-radius:14px;background:var(--panel);
+    margin:12px 0;overflow:hidden;transition:border-color .2s,background .2s;
+  }
+  .day.done{border-color:var(--teal-deep);background:linear-gradient(145deg,rgba(47,143,129,.12),var(--panel))}
+  .day-bar{display:flex;align-items:center;gap:16px;padding:16px 20px;cursor:pointer;user-select:none}
+  .day-bar:hover{background:rgba(255,255,255,.02)}
+  .chk{
+    width:26px;height:26px;border-radius:7px;border:2px solid var(--line-2);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;transition:all .18s;background:var(--ink)
+  }
+  .day.done .chk{background:var(--teal);border-color:var(--teal)}
+  .chk svg{width:15px;height:15px;opacity:0;transform:scale(.5);transition:all .18s}
+  .day.done .chk svg{opacity:1;transform:scale(1)}
+  .daynum{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--amber);letter-spacing:.1em;flex:0 0 auto;width:52px}
+  .daytitle{font-weight:600;font-size:15.5px;flex:1}
+  .day.done .daytitle{color:var(--paper-dim)}
+  .caret{flex:0 0 auto;color:var(--muted);transition:transform .25s}
+  .day.open .caret{transform:rotate(180deg)}
+  .day-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+  .day-body-inner{padding:4px 22px 22px 88px}
+  @media(max-width:620px){.day-body-inner{padding:4px 20px 22px 20px}}
+  .block{margin:14px 0}
+  .block .lbl{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--muted);display:block;margin-bottom:5px
+  }
+  .concept{font-size:14.5px;color:var(--paper);margin:0}
+  .metaphor{
+    border-left:3px solid var(--amber);padding:10px 0 10px 16px;margin:14px 0;
+    font-family:"Fraunces",serif;font-style:italic;font-size:15.5px;color:#f3e9d6;background:rgba(240,169,59,.05)
+  }
+  .metaphor::before{content:"🧭 ";font-style:normal}
+  .exercise{
+    background:var(--ink);border:1px dashed var(--line-2);border-radius:10px;padding:14px 16px;font-size:14px
+  }
+  .exercise .lbl{color:var(--teal)}
+  .res a{font-size:13.5px;font-family:"IBM Plex Mono",monospace}
+  .res{display:flex;flex-wrap:wrap;gap:8px 18px}
+
+  /* ---------- VAULT ---------- */
+  .vault{margin:60px 0 0;padding:30px;border:1px solid var(--line);border-radius:18px;background:var(--ink-2)}
+  .vault h2{font-family:"Fraunces",serif;font-size:28px;margin:0 0 4px;font-weight:600}
+  .vault p.s{color:var(--muted);font-size:13.5px;margin:0 0 22px}
+  .vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .vcard{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--panel)}
+  .vcard .t{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+  .vcard a{display:block;font-size:13.5px;margin:7px 0;border:none}
+  .vcard a::before{content:"↳ ";color:var(--muted)}
+
+  /* ---------- exam-day milestone ---------- */
+  .milestone{
+    margin:36px 0;padding:26px 30px;border-radius:16px;border:1px solid var(--amber-deep);
+    background:linear-gradient(135deg,rgba(240,169,59,.14),rgba(12,17,22,.4));
+  }
+  .milestone .mtag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase}
+  .milestone h3{font-family:"Fraunces",serif;font-size:24px;margin:6px 0 8px;font-weight:600}
+  .milestone p{margin:0;color:var(--paper-dim);font-size:14.5px}
+
+  footer{margin-top:60px;text-align:center;color:var(--muted);font-size:12.5px;font-family:"IBM Plex Mono",monospace}
+  .reset{
+    background:none;border:1px solid var(--line-2);color:var(--muted);border-radius:8px;
+    padding:7px 14px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;cursor:pointer;margin-top:18px
+  }
+  .reset:hover{color:var(--rose);border-color:var(--rose)}
+  .loading{opacity:.4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">Microsoft Certified · Fabric Analytics Engineer</div>
+    <h1>DP-600 in <em>30 days.</em></h1>
+    <p class="sub">A hands-on expedition from "I know Power BI" to "I passed the exam." Front-loads your strengths, spends real time on the Fabric peaks that trip up BI people, and ends in a simulated exam room.</p>
+  </header>
+
+  <!-- DASHBOARD -->
+  <div class="dash">
+    <div class="ring-wrap">
+      <svg width="138" height="138" viewBox="0 0 138 138">
+        <circle cx="69" cy="69" r="60" fill="none" stroke="#26323f" stroke-width="11"/>
+        <circle id="ring" cx="69" cy="69" r="60" fill="none" stroke="#f0a93b" stroke-width="11"
+                stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"
+                style="transition:stroke-dashoffset .6s ease"/>
+      </svg>
+      <div class="ring-num"><b id="pct">0%</b><span>complete</span></div>
+    </div>
+    <div class="dash-right">
+      <div class="stat-row">
+        <div class="stat"><b id="doneCount">0/30</b><span>DAYS LOGGED</span></div>
+        <div class="stat"><b id="streakHint">D2</b><span>NEXT DEEP DIVE</span></div>
+        <div class="stat"><b>700</b><span>SCORE TO PASS</span></div>
+      </div>
+      <div class="examdate">
+        <span>🎯 My exam is on</span>
+        <input type="date" id="examDate">
+        <span id="countdown" class="countdown"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLUEPRINT -->
+  <div class="blueprint">
+    <h3>The exam blueprint — where the points live</h3>
+    <p class="note">Every day below is tagged to one of these. Notice "Prepare data" is nearly half the exam — that's why it gets 9 days.</p>
+    <div class="bar">
+      <div class="bar-top"><span class="name">Prepare data</span><span class="wt">45–50%</span></div>
+      <div class="bar-track"><div class="bar-fill f1"></div></div>
+    </div>
+    <div class="bar">
+      <div class="bar-top"><span class="name">Implement &amp; manage semantic models</span><span class="wt">25–30%</span></div>
+      <div class="bar-track"><div class="bar-fill f3"></div></div>
+    </div>
+    <div class="bar">
+      <div class="bar-top"><span class="name">Maintain a data analytics solution</span><span class="wt">25–30%</span></div>
+      <div class="bar-track"><div class="bar-fill f2"></div></div>
+    </div>
+  </div>
+
+  <div id="plan"><!-- phases render here --></div>
+
+  <!-- VAULT -->
+  <div class="vault">
+    <h2>The Resource Vault</h2>
+    <p class="s">Bookmark these. The first three are non-negotiable; the rest are when you want a different voice explaining something.</p>
+    <div class="vgrid">
+      <div class="vcard">
+        <div class="t">★ Official (must use)</div>
+        <a href="https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/dp-600" target="_blank">DP-600 Study Guide</a>
+        <a href="https://learn.microsoft.com/en-us/credentials/certifications/exams/dp-600/practice/assessment?assessment-type=practice&assessmentId=90" target="_blank">Free MS Practice Assessment</a>
+        <a href="https://aka.ms/examdemo" target="_blank">Exam Sandbox (see the real UI)</a>
+      </div>
+      <div class="vcard">
+        <div class="t">Free MS Learn paths</div>
+        <a href="https://learn.microsoft.com/en-us/training/paths/get-started-fabric/" target="_blank">Get started with Fabric</a>
+        <a href="https://learn.microsoft.com/en-us/training/modules/get-started-lakehouses/" target="_blank">Lakehouses module</a>
+        <a href="https://learn.microsoft.com/en-us/training/modules/get-started-data-warehouse/" target="_blank">Data Warehouse module</a>
+        <a href="https://learn.microsoft.com/en-us/training/courses/dp-600t00" target="_blank">DP-600T00 official course</a>
+      </div>
+      <div class="vcard">
+        <div class="t">Video / community</div>
+        <a href="https://learn.microsoft.com/en-us/shows/exam-readiness-zone/" target="_blank">Exam Readiness Zone (DP-600)</a>
+        <a href="https://www.youtube.com/@GuyInACube" target="_blank">Guy in a Cube (Fabric)</a>
+        <a href="https://www.sqlbi.com/" target="_blank">SQLBI (DAX deep dives)</a>
+        <a href="https://thedatacommunity.org/2025/12/28/exam-prep-hub-for-dp-600-implementing-analytics-solutions-using-microsoft-fabric/" target="_blank">DP-600 Exam Prep Hub</a>
+      </div>
+      <div class="vcard">
+        <div class="t">Tools to install</div>
+        <a href="https://www.tabulareditor.com/" target="_blank">Tabular Editor 2 (free)</a>
+        <a href="https://daxstudio.org/" target="_blank">DAX Studio</a>
+        <a href="https://app.fabric.microsoft.com/" target="_blank">Fabric trial (60 days free)</a>
+      </div>
+    </div>
+    <button class="reset" id="resetBtn">↺ Reset all progress</button>
+    <button class="reset" id="exportBtn">⤓ Export progress</button>
+    <button class="reset" id="importBtn">⤒ Import progress</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
+    <p class="s" style="margin-top:14px">Progress auto-saves to this browser. Use <b>Export</b> to move it to another device (or commit <code>dp600-progress.json</code> to your repo for a versioned record), then <b>Import</b> it elsewhere.</p>
+  </div>
+
+  <footer>
+    Built for Julio · CDW PS Advanced Analytics · your clinical-pipeline scars are a feature, not a bug.<br>
+    Check a day off when the hands-on is done — not when you've just read it.
+  </footer>
+
+</div>
+
+<script>
+/* ===================== CURRICULUM DATA ===================== */
+const PHASES = [
+  {
+    tag:"FOUND", cls:"g", title:"Phase 0 · Base Camp",
+    desc:"Orientation. Get the map in your head before you climb — what lives where, and why.",
+    days:[
+      {n:1,title:"Lay of the land: Fabric, OneLake & capacities",
+        concept:"Workspaces, items (lakehouse/warehouse/semantic model/eventhouse/report), OneLake, capacities & SKUs, and the exam format (100 min, ~40–60 Qs, interactive labs).",
+        metaphor:"OneLake is the building's single shared file room. Every team — engineering, warehouse, BI — works off the same shelves instead of mailing each other copies.",
+        res:[{label:"Get started w/ Fabric path",url:"https://learn.microsoft.com/en-us/training/paths/get-started-fabric/"},{label:"Exam sandbox",url:"https://aka.ms/examdemo"}],
+        ex:"Spin up your free 60-day Fabric trial. Create a workspace named DP600-LAB. Click into the OneLake catalog and just explore item types — name out loud what each one is for."},
+      {n:2,title:"Medallion architecture & 'where does this go?'",
+        concept:"Bronze/Silver/Gold layers; lakehouse vs warehouse vs eventhouse vs semantic model and the role each plays end-to-end.",
+        metaphor:"Bronze/Silver/Gold = raw groceries → washed-and-chopped ingredients → the plated dish. The exam loves asking which layer a transformation belongs in.",
+        res:[{label:"Lakehouse module",url:"https://learn.microsoft.com/en-us/training/modules/get-started-lakehouses/"}],
+        ex:"On paper, sketch a medallion diagram for ONE of your Supernus studies (e.g. 821P203): raw EDC drop → cleaned subject/site → star-schema gold. You already think this way in Power Query — make it explicit."},
+      {n:3,title:"Choosing a data store (decision matrix)",
+        concept:"Lakehouse (Spark + files) vs Warehouse (full T-SQL, transactions) vs KQL DB/Eventhouse (telemetry/time-series). Know the deciding factors cold — this is a frequent exam question.",
+        metaphor:"Lakehouse = a workshop with raw materials and power tools (Spark). Warehouse = a tidy SQL office with locked filing cabinets (ACID transactions). Eventhouse = a stock-ticker wall for data in motion.",
+        res:[{label:"Fabric DW vs Lakehouse",url:"https://learn.microsoft.com/en-us/fabric/data-warehouse/data-warehousing"}],
+        ex:"Create a Lakehouse AND a Warehouse in your lab workspace. Notice both auto-create a SQL analytics endpoint. Write the differences in a notes file you'll grow all month."}
+    ]
+  },
+  {
+    tag:"45–50%", cls:"", title:"Phase 1 · Prepare Data — the summit",
+    desc:"Half the exam. Ingest, transform, query with SQL / KQL / DAX / Visual Query. Your Power Query brain transfers here — but Fabric has new tools you must touch.",
+    days:[
+      {n:4,title:"Get data: connections, shortcuts, mirroring, Real-Time hub",
+        concept:"Create data connections; discover via OneLake catalog & Real-Time hub; shortcuts (point, don't copy); mirroring; choosing ingest vs access.",
+        metaphor:"A OneLake shortcut is a hyperlink to data that lives elsewhere — like shelving a library book's call-number card instead of photocopying the whole book.",
+        res:[{label:"Lakehouse ingest module",url:"https://learn.microsoft.com/en-us/training/modules/get-started-lakehouses/"}],
+        ex:"Upload a CSV to your lakehouse Files area, then create a OneLake shortcut from your Warehouse to a Lakehouse table. Confirm you can query it without duplicating it."},
+      {n:5,title:"Dataflows Gen2 (Power Query, leveled up)",
+        concept:"This is your home turf — but learn Fabric-specific data destinations (lakehouse/warehouse), staging, and when Gen2 beats a notebook.",
+        metaphor:"Same Power Query engine you use daily; the new twist is choosing where the cleaned output lands inside Fabric.",
+        res:[{label:"Guy in a Cube",url:"https://www.youtube.com/@GuyInACube"}],
+        ex:"Build a Gen2 dataflow that imports your CSV, does 2–3 transforms (rename, type, filter), and lands it as a Delta table in the lakehouse. This should feel easy — that's the point."},
+      {n:6,title:"Notebooks & Spark (the part BI people dodge)",
+        concept:"PySpark DataFrames + Spark SQL: read/write Delta, basic transforms, df.write.format('delta'). You don't need to be a Spark wizard — you need to read & lightly modify a notebook.",
+        metaphor:"Spark is a crew of dishwashers splitting one giant pile of plates across many sinks at once. You just need to know how to hand them the pile.",
+        res:[{label:"Get started w/ Fabric path",url:"https://learn.microsoft.com/en-us/training/paths/get-started-fabric/"}],
+        ex:"In a notebook: load your lakehouse table into a DataFrame, filter it, add a column, write it back as a new Delta table. Run df.show() and read the output. Demystify it."},
+      {n:7,title:"Delta tables & the SQL analytics endpoint",
+        concept:"Delta format, V-Order, OPTIMIZE/VACUUM, time travel; the lakehouse SQL analytics endpoint (read-only T-SQL over your Delta tables).",
+        metaphor:"Delta = a spreadsheet with a full 'track changes' history baked in. The SQL endpoint is a read-only window letting SQL people peer into the lake.",
+        res:[{label:"Fabric Lakehouse overview",url:"https://learn.microsoft.com/en-us/fabric/data-engineering/lakehouse-overview"}],
+        ex:"Open the lakehouse's SQL analytics endpoint and run SELECT TOP 100 + a GROUP BY against your Delta table. Note that you can read but not INSERT here."},
+      {n:8,title:"The Warehouse: T-SQL, COPY INTO, load patterns",
+        concept:"Create tables, ingest with COPY INTO / pipelines, full read-write T-SQL, transactions. Views, table-valued functions, stored procedures.",
+        metaphor:"The warehouse is the lakehouse's buttoned-up sibling: it can actually edit and delete rows (real transactions), not just read.",
+        res:[{label:"Data Warehouse module",url:"https://learn.microsoft.com/en-us/training/modules/get-started-data-warehouse/"}],
+        ex:"In your Warehouse: CREATE TABLE, COPY INTO from your lakehouse files, then write a stored procedure that loads/cleans a dim table. T-SQL muscle for the exam."},
+      {n:9,title:"Transform: star schema, dedupe, nulls, joins",
+        concept:"Build a star schema in lakehouse/warehouse; denormalize, aggregate, merge/join, resolve duplicates/nulls, convert types, filter. (You do this daily in M — now in SQL/Spark.)",
+        metaphor:"You already build Dim_Subject / Dim_Site / fact tables in Power Query. Same dimensional thinking — different kitchen (SQL & Spark instead of M).",
+        res:[{label:"Data Warehouse module",url:"https://learn.microsoft.com/en-us/training/modules/get-started-data-warehouse/"}],
+        ex:"Translate ONE of your real star schemas (821P203's Dim_Subject + a fact table) into warehouse T-SQL: build the dim, build the fact, join on the key. This is also Project #1 toward AI-engineering, so it double-counts."},
+      {n:10,title:"Query & analyze: Visual Query Editor + SQL",
+        concept:"Select/filter/aggregate using the Visual Query Editor (no-code Power Query-style) and raw SQL. Know when each is expected.",
+        metaphor:"Visual Query Editor is Power Query's diagram view wearing a SQL nametag.",
+        res:[{label:"Fabric data warehousing",url:"https://learn.microsoft.com/en-us/fabric/data-warehouse/data-warehousing"}],
+        ex:"Answer the same business question 2 ways — once in the Visual Query Editor, once in hand-written SQL — and confirm identical results."},
+      {n:11,title:"KQL & Eventhouse (your weakest spot — own it)",
+        concept:"Eventhouse/KQL DB for time-series & telemetry; KQL basics: source | where | summarize | project. OneLake integration for Eventhouse.",
+        metaphor:"KQL reads left-to-right like a conveyor belt: take the table, pipe it through a filter, pipe it through a summary. SQL's pipeline-loving cousin.",
+        res:[{label:"Get started w/ Fabric path",url:"https://learn.microsoft.com/en-us/training/paths/get-started-fabric/"}],
+        ex:"Create a KQL Queryset against the sample StormEvents data. Write: StormEvents | where State == 'TEXAS' | summarize count() by EventType. Get comfy with the pipe."},
+      {n:12,title:"DAX as a query language + Prepare-Data recap",
+        concept:"EVALUATE / DAX queries; recap the whole Prepare-Data domain. Self-check before moving on.",
+        metaphor:"You know DAX measures; DAX queries just ask DAX to hand back a whole table instead of one number.",
+        res:[{label:"Practice assessment",url:"https://learn.microsoft.com/en-us/credentials/certifications/exams/dp-600/practice/assessment?assessment-type=practice&assessmentId=90"}],
+        ex:"Take the Prepare-Data section of the MS practice assessment. Log every wrong answer in your notes file with WHY it was wrong. Aim ≥70% before moving on."}
+    ]
+  },
+  {
+    tag:"25–30%", cls:"p", title:"Phase 2 · Semantic Models",
+    desc:"Your comfort zone meets the new star: Direct Lake. Design, build, then optimize at enterprise scale.",
+    days:[
+      {n:13,title:"Storage modes: Import / DirectQuery / Direct Lake / Dual",
+        concept:"What each mode does, trade-offs, and when to pick which. Direct Lake is the headline feature.",
+        metaphor:"Import = groceries in your fridge (fast, but a copy). DirectQuery = ordering delivery every time (fresh, slower). Direct Lake = a teleporter straight to the lake's shelves — fridge speed, no copy.",
+        res:[{label:"SQLBI storage modes",url:"https://www.sqlbi.com/"}],
+        ex:"Create one Import model and one Direct Lake model over the same lakehouse table. Notice Direct Lake needs no scheduled refresh of the data itself."},
+      {n:14,title:"Direct Lake deep dive (exam favorite)",
+        concept:"Direct Lake on OneLake vs on SQL endpoint; framing/refresh behavior; DirectQuery fallback and how to control it; reframing.",
+        metaphor:"Framing = the model taking a fresh snapshot of which Delta files to read. Fallback to DirectQuery = the teleporter quietly switching to delivery when it can't handle the load.",
+        res:[{label:"Fabric docs",url:"https://learn.microsoft.com/en-us/fabric/"}],
+        ex:"Read the Direct Lake limitations list and write 3 scenarios that force a DirectQuery fallback. The exam tests the edges, not the happy path."},
+      {n:15,title:"Star schema, relationships, bridge & many-to-many",
+        concept:"Model star schemas; one-to-many, bidirectional, bridge tables, many-to-many resolution.",
+        metaphor:"A bridge table is a translator standing between two crowds who don't share a language — exactly your multi-valued race attribute → bridge decision from 821P203.",
+        res:[{label:"SQLBI relationships",url:"https://www.sqlbi.com/"}],
+        ex:"Build a model with a deliberate many-to-many, then resolve it with a bridge table. Verify totals don't double-count."},
+      {n:16,title:"DAX: variables, iterators, filter context, time intel",
+        concept:"VAR/RETURN, SUMX & iterators, CALCULATE + filter context, time intelligence, windowing, information functions.",
+        metaphor:"CALCULATE is a stage director shouting new filter instructions to the actors mid-scene. Master it and DAX stops being mysterious.",
+        res:[{label:"SQLBI DAX",url:"https://www.sqlbi.com/"}],
+        ex:"Rebuild your 821P203 cumulative-randomized measure from scratch using REMOVEFILTERS + a TODAY() gate — then explain out loud why REMOVEFILTERS on the whole table fixes the legend-filter trap."},
+      {n:17,title:"Calculation groups, dynamic format strings, field params",
+        concept:"Calculation groups (one definition, many measures), dynamic format strings, field parameters. Newer features the exam now emphasizes.",
+        metaphor:"A calculation group is a single rubber stamp ('YTD', 'PY', '% growth') you press onto any measure, instead of hand-writing 30 near-identical measures.",
+        res:[{label:"Tabular Editor",url:"https://www.tabulareditor.com/"}],
+        ex:"In Tabular Editor, build a time-intelligence calculation group (Current / YTD / PY / YoY%). Apply it across two measures and watch the matrix light up."},
+      {n:18,title:"Large models, composite models, aggregations",
+        concept:"Large semantic model storage format; composite models (mixing Import + DirectQuery/Direct Lake); aggregation tables.",
+        metaphor:"An aggregation table is a pre-totaled cheat sheet — the engine peeks at it before doing the expensive full count.",
+        res:[{label:"SQLBI",url:"https://www.sqlbi.com/"}],
+        ex:"Note the cardinality threshold where 'large model format' matters and 3 cases for composite models. Mostly conceptual — get the vocabulary tight."},
+      {n:19,title:"Optimize: DAX & visual performance, incremental refresh",
+        concept:"Performance Analyzer, reduce cardinality, optimize DirectQuery with table-level storage, aggregations, incremental refresh for semantic models. DAX Studio for tuning.",
+        metaphor:"Incremental refresh = only re-cooking today's dish instead of re-cooking the whole week's menu every night.",
+        res:[{label:"DAX Studio",url:"https://daxstudio.org/"}],
+        ex:"Run Performance Analyzer on a slow visual, copy the DAX into DAX Studio, read Server Timings. Then take the Semantic-Models section of the practice assessment; log wrong answers."}
+    ]
+  },
+  {
+    tag:"25–30%", cls:"t", title:"Phase 3 · Maintain the Solution",
+    desc:"Security, governance, and the dev lifecycle. Dry on paper, but the exam asks crisp 'who can see what / how do I ship this' questions.",
+    days:[
+      {n:20,title:"Security: workspace roles, RLS / CLS / OLS / file-level",
+        concept:"Workspace roles (Admin/Member/Contributor/Viewer); item permissions; row-, column-, object-, and OneLake file-level security.",
+        metaphor:"Layered building security: workspace role = which floors your badge opens; RLS = which desks; CLS/OLS = which drawers; file-level = which physical folders in the lake.",
+        res:[{label:"Study guide · governance",url:"https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/dp-600"}],
+        ex:"Implement RLS on a model (e.g. a site sees only its own subjects — your RBM world exactly). Test it with 'View as role'."},
+      {n:21,title:"Sensitivity labels, endorsement, governance",
+        concept:"Apply sensitivity labels; endorse items (Promoted vs Certified); the OneLake catalog for discovery/governance.",
+        metaphor:"Endorsement is a chef's 'tasted & approved' sticker so colleagues trust which dataset to grab.",
+        res:[{label:"Study guide",url:"https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/dp-600"}],
+        ex:"Promote a semantic model and apply a sensitivity label. Note who can endorse-Certify vs Promote (it's a permissions distinction the exam likes)."},
+      {n:22,title:"Dev lifecycle: Git integration & .pbip",
+        concept:"Configure version control for a workspace (Git); Power BI Desktop projects (.pbip) and why source control matters.",
+        metaphor:"Git for your workspace = 'save points' in a video game; .pbip exposes your report as plain text files Git can actually track.",
+        res:[{label:"DP-600T00 course",url:"https://learn.microsoft.com/en-us/training/courses/dp-600t00"}],
+        ex:"Connect your lab workspace to a Git repo (Azure DevOps/GitHub). Make a change, commit, and watch it sync. Save a .pbip from Desktop and peek at the folder structure."},
+      {n:23,title:"Deployment pipelines, XMLA, impact analysis",
+        concept:"Dev/Test/Prod deployment pipelines, deployment rules, deploy via XMLA endpoint, impact analysis & lineage across lakehouses/warehouses/dataflows/models.",
+        metaphor:"A deployment pipeline is an assembly line: dev → test → prod with rules that swap the data source at each station. Lineage is the X-ray showing what breaks if you move a part.",
+        res:[{label:"DP-600T00 course",url:"https://learn.microsoft.com/en-us/training/courses/dp-600t00"}],
+        ex:"Create a deployment pipeline with 3 stages, assign your workspace to Dev, and deploy to Test. Open Lineage view and trace one model's dependencies."},
+      {n:24,title:"Reusable assets + Maintain-domain recap",
+        concept:".pbit templates, .pbids connection files, shared semantic models. Then recap the whole Maintain domain.",
+        metaphor:"A .pbit is a cookie-cutter (shape, no dough); a .pbids is just the address of the ingredients; a shared semantic model is one batch of dough many bakers reuse.",
+        res:[{label:"Practice assessment",url:"https://learn.microsoft.com/en-us/credentials/certifications/exams/dp-600/practice/assessment?assessment-type=practice&assessmentId=90"}],
+        ex:"Take the Maintain-domain practice questions. Log wrong answers. You've now touched all three domains hands-on."}
+    ]
+  },
+  {
+    tag:"FINISH", cls:"g", title:"Phase 4 · Consolidate & Simulate",
+    desc:"Stop learning new things. Tighten, test under pressure, and walk into the real exam having already 'taken' it twice.",
+    days:[
+      {n:25,title:"Weak-area triage + build your cheat-sheet",
+        concept:"Review your month of logged wrong-answers; rank weak spots; condense everything into a one-page cheat sheet (storage modes, Direct Lake fallback, security layers, KQL verbs, DAX gotchas).",
+        metaphor:"You're packing the summit bag: only what you'll actually need at altitude.",
+        res:[{label:"Study guide skills list",url:"https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/dp-600"}],
+        ex:"Write the one-page cheat sheet by hand (handwriting locks memory better than copy-paste). This becomes your final-morning review."},
+      {n:26,title:"Full practice assessment — run #1 (timed)",
+        concept:"Sit the complete Microsoft practice assessment under exam-like conditions. No notes.",
+        metaphor:"First full dress rehearsal with the lights on.",
+        res:[{label:"MS Practice Assessment",url:"https://learn.microsoft.com/en-us/credentials/certifications/exams/dp-600/practice/assessment?assessment-type=practice&assessmentId=90"}],
+        ex:"Score it. Anything <80% in a domain → that's tomorrow's target. Don't peek at answers until you've finished the whole thing."},
+      {n:27,title:"Targeted re-study + hands-on redo",
+        concept:"Re-drill ONLY your weak domains from yesterday — re-do the hands-on labs, not just rereading.",
+        metaphor:"Patch the leaks you found, don't repaint the whole boat.",
+        res:[{label:"Guy in a Cube",url:"https://www.youtube.com/@GuyInACube"}],
+        ex:"Redo the 2–3 labs tied to your weakest area from scratch, no instructions. If you can do it cold, it's yours."},
+      {n:28,title:"🧪 SIMULATED EXAM #1 (the one I build for you)",
+        concept:"Sit the full simulated exam I'll generate: timed to 100 min, mixed multiple-choice + case study + an interactive lab-style scenario that mirrors the real exam's interactive components.",
+        metaphor:"The flight simulator before the real cockpit — same controls, no crash risk.",
+        res:[{label:"Exam sandbox UI",url:"https://aka.ms/examdemo"}],
+        ex:"Tell me 'build my simulated exam' and I'll generate Sim Exam #1. Take it timed, then we review every miss together."},
+      {n:29,title:"Review Sim #1 + practice assessment run #2",
+        concept:"Debrief the simulated exam, re-take the MS practice assessment, final cheat-sheet polish.",
+        metaphor:"Watching the game tape before the championship.",
+        res:[{label:"MS Practice Assessment",url:"https://learn.microsoft.com/en-us/credentials/certifications/exams/dp-600/practice/assessment?assessment-type=practice&assessmentId=90"}],
+        ex:"Both practice runs should now be 85%+. If a domain still lags, we do one more focused sim block on it."},
+      {n:30,title:"🚀 SIMULATED EXAM #2 + go-time",
+        concept:"Final dress rehearsal (fresh question set), confidence check, logistics (ID, check-in, environment for proctoring).",
+        metaphor:"Wheels up. You've already flown this route twice in the sim.",
+        res:[{label:"Schedule the exam",url:"https://learn.microsoft.com/en-us/credentials/certifications/fabric-analytics-engineer-associate/"}],
+        ex:"Take Sim Exam #2. Pass it → book the real exam within 3 days while it's hot. You're ready."}
+    ]
+  }
+];
+
+/* ===================== STATE + STORAGE ===================== */
+const KEY = "dp600-progress";
+let STATE = { days:{}, examDate:null };
+// Works both inside Claude.ai (window.storage) AND on GitHub Pages / any website (localStorage)
+const hasCloud = (typeof window !== "undefined" && window.storage && typeof window.storage.get === "function");
+
+async function loadState(){
+  try{
+    if(hasCloud){
+      const r = await window.storage.get(KEY);
+      if(r && r.value) STATE = JSON.parse(r.value);
+    } else {
+      const v = localStorage.getItem(KEY);
+      if(v) STATE = JSON.parse(v);
+    }
+    STATE.days = STATE.days || {};
+  }catch(e){ /* first run, no saved data yet */ }
+}
+async function saveState(){
+  try{
+    const s = JSON.stringify(STATE);
+    if(hasCloud){ await window.storage.set(KEY, s); }
+    else { localStorage.setItem(KEY, s); }
+  }catch(e){ console.error("save failed", e); }
+}
+
+/* ===================== RENDER ===================== */
+const TOTAL = 30;
+function render(){
+  const plan = document.getElementById('plan');
+  plan.innerHTML = "";
+  PHASES.forEach(ph=>{
+    const sec = document.createElement('div');
+    sec.className = "phase";
+    sec.innerHTML = `<div class="phase-head">
+        <span class="phase-tag ${ph.cls}">${ph.tag}</span>
+        <div><h2 class="phase-title">${ph.title}</h2></div>
+      </div>
+      <p class="phase-desc">${ph.desc}</p>`;
+    ph.days.forEach(d=>{
+      const done = !!STATE.days[d.n];
+      const card = document.createElement('div');
+      card.className = "day"+(done?" done":"");
+      card.dataset.n = d.n;
+      card.innerHTML = `
+        <div class="day-bar">
+          <div class="chk"><svg viewBox="0 0 24 24" fill="none" stroke="#0c1116" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="daynum">DAY ${String(d.n).padStart(2,'0')}</div>
+          <div class="daytitle">${d.title}</div>
+          <div class="caret"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></div>
+        </div>
+        <div class="day-body"><div class="day-body-inner">
+          <div class="block"><span class="lbl">What you'll learn</span><p class="concept">${d.concept}</p></div>
+          ${d.metaphor?`<div class="metaphor">${d.metaphor}</div>`:""}
+          <div class="block exercise"><span class="lbl">Hands-on (check the box when THIS is done)</span>${d.ex}</div>
+          <div class="block"><span class="lbl">Resources</span><div class="res">${d.res.map(r=>`<a href="${r.url}" target="_blank">${r.label} ↗</a>`).join("")}</div></div>
+        </div></div>`;
+      // expand/collapse
+      const bar = card.querySelector('.day-bar');
+      const body = card.querySelector('.day-body');
+      const chk = card.querySelector('.chk');
+      bar.addEventListener('click',(e)=>{
+        if(e.target.closest('.chk')) return;
+        const open = card.classList.toggle('open');
+        body.style.maxHeight = open ? body.scrollHeight+"px" : "0px";
+      });
+      chk.addEventListener('click', async ()=>{
+        const isDone = card.classList.toggle('done');
+        if(isDone){ STATE.days[d.n]=true; } else { delete STATE.days[d.n]; }
+        await saveState();
+        updateDash();
+      });
+      sec.appendChild(card);
+    });
+    plan.appendChild(sec);
+
+    // milestone banner after final phase intro handled inline; add sim callout before phase 4 days already inside
+  });
+  updateDash();
+}
+
+function updateDash(){
+  const done = Object.keys(STATE.days).filter(k=>STATE.days[k]).length;
+  const pct = Math.round(done/TOTAL*100);
+  document.getElementById('doneCount').textContent = done+"/30";
+  document.getElementById('pct').textContent = pct+"%";
+  const ring = document.getElementById('ring');
+  const circ = 2*Math.PI*60;
+  ring.setAttribute('stroke-dasharray', circ);
+  ring.setAttribute('stroke-dashoffset', circ*(1-done/TOTAL));
+  ring.setAttribute('stroke', pct>=80? "#46c2b0" : "#f0a93b");
+  // next undone day
+  let next = null;
+  for(let i=1;i<=TOTAL;i++){ if(!STATE.days[i]){ next=i; break; } }
+  document.getElementById('streakHint').textContent = next? ("D"+next) : "DONE";
+}
+
+/* exam date + countdown */
+function refreshCountdown(){
+  const el = document.getElementById('countdown');
+  if(!STATE.examDate){ el.textContent=""; return; }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const exam = new Date(STATE.examDate+"T00:00:00");
+  const days = Math.round((exam-today)/86400000);
+  el.textContent = days>1? `· ${days} days out` : days===1? "· tomorrow!" : days===0? "· TODAY 🚀" : "· past";
+}
+
+/* ===================== INIT ===================== */
+(async function init(){
+  document.body.classList.add('loading');
+  await loadState();
+  render();
+  const di = document.getElementById('examDate');
+  if(STATE.examDate) di.value = STATE.examDate;
+  refreshCountdown();
+  di.addEventListener('change', async ()=>{ STATE.examDate = di.value||null; await saveState(); refreshCountdown(); });
+  document.getElementById('resetBtn').addEventListener('click', async ()=>{
+    if(!confirm("Reset all 30 days of progress? This can't be undone.")) return;
+    STATE = {days:{}, examDate:STATE.examDate};
+    await saveState();
+    render();
+  });
+  // Export progress to a JSON file
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(STATE,null,2)], {type:"application/json"});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = "dp600-progress.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  // Import progress from a JSON file
+  const impFile = document.getElementById('importFile');
+  document.getElementById('importBtn').addEventListener('click', ()=> impFile.click());
+  impFile.addEventListener('change', async (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    try{
+      const txt = await f.text();
+      const obj = JSON.parse(txt);
+      STATE = { days: obj.days||{}, examDate: obj.examDate||null };
+      await saveState();
+      render();
+      if(STATE.examDate) di.value = STATE.examDate;
+      refreshCountdown();
+    }catch(err){ alert("Couldn't read that file — make sure it's a dp600-progress.json export."); }
+    impFile.value = "";
+  });
+  document.body.classList.remove('loading');
+})();
+</script>
+</body>
+</html>
