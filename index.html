@@ -79,6 +79,9 @@
     border-radius:8px;padding:7px 10px;font-family:"IBM Plex Mono",monospace;font-size:13px;
   }
   .countdown{color:var(--amber);font-family:"IBM Plex Mono",monospace;font-weight:600}
+  .syncpill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap}
+  .syncpill.ok{color:var(--teal);border-color:var(--teal-deep)}
+  .syncpill.warn{color:var(--amber);border-color:var(--amber-deep)}
 
   /* ---------- BLUEPRINT ---------- */
   .blueprint{margin:8px 0 50px;padding:26px 30px;border:1px solid var(--line);border-radius:18px;background:var(--ink-2)}
@@ -207,6 +210,7 @@
         <span>🎯 My exam is on</span>
         <input type="date" id="examDate">
         <span id="countdown" class="countdown"></span>
+        <span id="sync" class="syncpill">local only</span>
       </div>
     </div>
   </div>
@@ -463,29 +467,80 @@ const PHASES = [
 ];
 
 /* ===================== STATE + STORAGE ===================== */
+/* ====== STORAGE CONFIG ======
+   Cross-device sync via Neon Postgres. To turn it on:
+     1) set enabled: true
+     2) paste your Neon Data API base URL (it ends with /rest/v1)
+     3) commit + push.
+   Leave enabled:false to run purely on this browser (localStorage). */
+const NEON = {
+  enabled: true,
+  dataApiUrl: "https://ep-tiny-frog-aq80vpdt.apirest.c-8.us-east-1.aws.neon.tech/neondb/rest/v1",
+  userId: "julio"
+};
+
 const KEY = "dp600-progress";
 let STATE = { days:{}, examDate:null };
-// Works both inside Claude.ai (window.storage) AND on GitHub Pages / any website (localStorage)
+// window.storage exists only inside Claude.ai; on GitHub Pages we use localStorage
 const hasCloud = (typeof window !== "undefined" && window.storage && typeof window.storage.get === "function");
+const useNeon = () => NEON.enabled && /^https?:\/\//.test(NEON.dataApiUrl);
+
+function setSync(txt, cls){
+  const el = document.getElementById('sync');
+  if(el){ el.textContent = txt; el.className = "syncpill " + (cls||""); }
+}
+
+async function neonGet(){
+  const url = `${NEON.dataApiUrl.replace(/\/$/,'')}/progress?id=eq.${encodeURIComponent(NEON.userId)}&select=data`;
+  const res = await fetch(url, { headers:{ "Accept":"application/json" } });
+  if(!res.ok) throw new Error("GET "+res.status);
+  const rows = await res.json();
+  return rows.length ? rows[0].data : null;
+}
+async function neonPut(){
+  const url = `${NEON.dataApiUrl.replace(/\/$/,'')}/progress?id=eq.${encodeURIComponent(NEON.userId)}`;
+  const res = await fetch(url, {
+    method:"PATCH",
+    headers:{ "Content-Type":"application/json", "Prefer":"return=minimal" },
+    body: JSON.stringify({ data: STATE, updated_at: new Date().toISOString() })
+  });
+  if(!res.ok) throw new Error("PATCH "+res.status);
+}
 
 async function loadState(){
+  // 1) instant local cache so the UI never waits on the network
   try{
-    if(hasCloud){
-      const r = await window.storage.get(KEY);
-      if(r && r.value) STATE = JSON.parse(r.value);
-    } else {
-      const v = localStorage.getItem(KEY);
-      if(v) STATE = JSON.parse(v);
-    }
-    STATE.days = STATE.days || {};
-  }catch(e){ /* first run, no saved data yet */ }
+    if(hasCloud){ const r = await window.storage.get(KEY); if(r && r.value) STATE = JSON.parse(r.value); }
+    else { const v = localStorage.getItem(KEY); if(v) STATE = JSON.parse(v); }
+  }catch(e){ /* first run */ }
+  // 2) cloud truth (overrides local if reachable)
+  if(useNeon()){
+    try{
+      const remote = await neonGet();
+      if(remote && typeof remote === "object") STATE = remote;
+      setSync("☁ synced","ok");
+    }catch(e){ setSync("⚠ offline (local only)","warn"); console.error(e); }
+  }
+  STATE.days = STATE.days || {};
 }
+
+let saveTimer = null;
 async function saveState(){
+  // always persist locally right away
   try{
     const s = JSON.stringify(STATE);
     if(hasCloud){ await window.storage.set(KEY, s); }
     else { localStorage.setItem(KEY, s); }
-  }catch(e){ console.error("save failed", e); }
+  }catch(e){ console.error("local save failed", e); }
+  // debounced push to Neon (so rapid toggles = one request)
+  if(useNeon()){
+    setSync("⟳ saving…","");
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async ()=>{
+      try{ await neonPut(); setSync("☁ synced","ok"); }
+      catch(e){ setSync("⚠ not saved to cloud","warn"); console.error(e); }
+    }, 400);
+  }
 }
 
 /* ===================== RENDER ===================== */
